@@ -121,6 +121,7 @@ Questions: Manage interview questions
 Settings: Configure interview parameters
 #### 📁 Project Structure
 Copy
+```
 RecruitmentPlatform/
 ├── RecruitmentPlatform.Server/          # ASP.NET 9 Web API
 │   ├── Controllers/
@@ -153,6 +154,7 @@ RecruitmentPlatform/
 ├── docker-compose.yml
 ├── README.md
 └── .gitignore
+```
 #### 🔒 Security Notes
 For Production:
 Replace default admin credentials immediately
