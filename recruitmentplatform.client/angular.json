@@ -38,6 +38,8 @@
               }
             ],
             "styles": [
+              "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "node_modules/bootstrap-icons/font/bootstrap-icons.css",
               "src/styles.css"
             ],
             "scripts": []
@@ -47,8 +49,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "600kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "1MB",
+                  "maximumError": "2MB"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -57,7 +59,17 @@
                 }
               ],
               "outputHashing": "all",
-              "allowedCommonJsDependencies": ["sweetalert2"]
+              "allowedCommonJsDependencies": [
+                "sweetalert2"
+              ],
+              "optimization": {
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": false
+                },
+                "fonts": true
+              }
             },
             "development": {
               "optimization": false,
@@ -102,7 +114,9 @@
               }
             ],
             "styles": [
-              "src/styles.css"
+              "node_modules/bootstrap/scss/bootstrap.scss",
+              "node_modules/bootstrap-icons/font/bootstrap-icons.css",
+              "src/styles.scss"
             ],
             "scripts": [],
             "karmaConfig": "karma.conf.js"

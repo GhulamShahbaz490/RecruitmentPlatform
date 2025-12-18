@@ -1,53 +1,53 @@
-// interview.component.ts
-import { Component, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { NgbAlertModule, NgbProgressbarModule } from '@ng-bootstrap/ng-bootstrap';
-import { FormsModule } from '@angular/forms';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
-import { InterviewQuestionDto, SubmitAnswerDto } from '../../models/interview.model';
-import { Subject, interval, takeUntil } from 'rxjs';
+import { AuthService } from '../../services/auth.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { NgbAlertModule, NgbProgressbarModule } from '@ng-bootstrap/ng-bootstrap';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-interview',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    NgbAlertModule,
-    NgbProgressbarModule
-  ],
+  imports: [CommonModule, FormsModule, NgbAlertModule, NgbProgressbarModule],
   templateUrl: './interview.component.html',
   styleUrls: ['./interview.component.css']
 })
-export class InterviewComponent implements OnDestroy {
+export class InterviewComponent implements OnInit, OnDestroy {
   sessionId: string = '';
-  currentQuestion: InterviewQuestionDto | null = null;
+  currentQuestion: any = null;
   selectedAnswer: number | null = null;
-  timeLeft: number | string = '...';
+  timeLeft = 60;
   totalQuestions = 0;
   answeredCount = 0;
   isLoading = true;
   isSubmitting = false;
-  alertMessage: string = '';
-  alertType: string = 'danger';
+  errorMessage: string | null = null;
 
   private timerSubscription = new Subject<void>();
   private destroy$ = new Subject<void>();
 
   constructor(
+    private route: ActivatedRoute,
+    private router: Router,
     private apiService: ApiService,
-    private router: Router
-  ) {
-    this.startInterview();
-  }
+    private authService: AuthService
+  ) {}
 
-ngOnInit(): void {
-    // Check for existing session ID
-    this.router.routerState.root.queryParams.subscribe(params => {
-      const sessionId = params['sessionId'];
-      if (sessionId) {
-        this.sessionId = sessionId;
+  ngOnInit(): void {
+    // Check if user is authenticated
+    if (!this.authService.isAuthenticated()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    // Check for existing session ID in query params
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
+      const existingSessionId = params['sessionId'];
+      if (existingSessionId) {
+        this.sessionId = existingSessionId;
         this.loadNextQuestion();
       } else {
         this.startInterview();
@@ -60,61 +60,63 @@ ngOnInit(): void {
     this.destroy$.complete();
   }
 
-  showAlert(message: string, type: string = 'danger'): void {
-    this.alertMessage = message;
-    this.alertType = type;
-    setTimeout(() => this.alertMessage = '', 3000);
-  }
-
   startInterview(): void {
+    this.isLoading = true;
     this.apiService.startInterview().subscribe({
       next: (response) => {
         this.sessionId = response.sessionId;
         this.loadNextQuestion();
       },
       error: (err) => {
-        this.showAlert('Failed to start interview');
-        this.router.navigate(['/']);
+        this.errorMessage = 'Failed to start interview. Please try again.';
+        this.isLoading = false;
+        setTimeout(() => this.router.navigate(['/']), 3000);
       }
     });
   }
 
   loadNextQuestion(): void {
-    this.apiService.getNextQuestion(this.sessionId).subscribe({
+    if (!this.sessionId) {
+      this.errorMessage = 'Invalid interview session.';
+      this.router.navigate(['/']);
+      return;
+    }
+
+    this.apiService.getNextQuestion(this.sessionId).pipe(takeUntil(this.destroy$)).subscribe({
       next: (question) => {
-        if (question && question.id) {
-          this.currentQuestion = question;
-          this.selectedAnswer = null;
-          this.timeLeft = question.timeLimitSeconds;
-          this.startTimer();
-          this.isLoading = false;
-          this.totalQuestions++;
-        } else {
+        if (!question) {
+          // No more questions - complete interview
           this.completeInterview();
+          return;
         }
+        
+        this.currentQuestion = question;
+        this.selectedAnswer = null;
+        this.timeLeft = question.timeLimitSeconds || 60;
+        this.isLoading = false;
+        this.totalQuestions++;
+        this.startTimer();
       },
       error: (err) => {
-        this.completeInterview();
+        this.errorMessage = 'Failed to load next question.';
+        setTimeout(() => this.completeInterview(), 2000);
       }
     });
   }
 
   startTimer(): void {
-    interval(1000).pipe(
-      takeUntil(this.timerSubscription),
-      takeUntil(this.destroy$)
-    ).subscribe(() => {
-      if (typeof this.timeLeft === 'number') {
-        this.timeLeft = this.timeLeft - 1;
-        if (this.timeLeft <= 0) {
-          this.timeUp();
-        }
+    const interval = setInterval(() => {
+      this.timeLeft--;
+      if (this.timeLeft <= 0) {
+        clearInterval(interval);
+        this.timeUp();
       }
-    });
+    }, 1000);
+
+    this.destroy$.subscribe(() => clearInterval(interval));
   }
 
   timeUp(): void {
-    this.timerSubscription.next();
     if (this.selectedAnswer === null) {
       this.selectedAnswer = -1; // Mark as unanswered
     }
@@ -123,57 +125,65 @@ ngOnInit(): void {
 
   onSubmitAnswer(): void {
     if (this.selectedAnswer === null) {
-      this.showAlert('Please select an answer', 'warning');
+      this.errorMessage = 'Please select an answer before submitting.';
+      setTimeout(() => this.errorMessage = null, 3000);
       return;
     }
-    this.timerSubscription.next();
     this.submitAnswer();
   }
 
-  getProgress(): number {
-    if (!this.currentQuestion || typeof this.timeLeft !== 'number') return 0;
-    return (this.timeLeft / this.currentQuestion.timeLimitSeconds) * 100;
-  }
-
-  isTimeWarning(): boolean {
-    return typeof this.timeLeft === 'number' && this.timeLeft < 10;
-  }
-
   private submitAnswer(): void {
-    if (!this.currentQuestion || typeof this.timeLeft !== 'number') return;
+    if (!this.currentQuestion) return;
 
     this.isSubmitting = true;
-    const timeTaken = this.currentQuestion.timeLimitSeconds - this.timeLeft;
+    const timeTaken = 60 - this.timeLeft; // Assuming 60 seconds total
 
-    const answerDto: SubmitAnswerDto = {
+    const answerDto = {
       questionId: this.currentQuestion.id,
       selectedAnswerIndex: this.selectedAnswer!,
       timeTakenSeconds: timeTaken
     };
 
-    this.apiService.submitAnswer(this.sessionId, answerDto).subscribe({
-      next: () => {
+    this.apiService.submitAnswer(this.sessionId, answerDto).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (response) => {
         this.answeredCount++;
         this.isSubmitting = false;
         this.loadNextQuestion();
       },
       error: (err) => {
-        this.showAlert('Failed to submit answer');
-        this.loadNextQuestion();
+        this.errorMessage = 'Failed to submit answer. Moving to next question.';
+        this.isSubmitting = false;
+        setTimeout(() => {
+          this.errorMessage = null;
+          this.loadNextQuestion();
+        }, 2000);
       }
     });
   }
 
   completeInterview(): void {
     this.isLoading = true;
-    this.apiService.completeInterview(this.sessionId).subscribe({
+    this.apiService.completeInterview(this.sessionId).pipe(takeUntil(this.destroy$)).subscribe({
       next: (result) => {
-        this.router.navigate(['/results'], { state: { result } });
+        // CRITICAL FIX: Properly navigate to results page
+        this.router.navigate(['/results'], { 
+          queryParams: { 
+            sessionId: this.sessionId,
+            completed: 'true' 
+          },
+          state: { result: result } // Pass result via state
+        });
       },
       error: (err) => {
-        this.showAlert('Failed to complete interview');
-        this.router.navigate(['/']);
+        this.errorMessage = 'Failed to complete interview. Please try again.';
+        this.isLoading = false;
+        // Fallback navigation
+        setTimeout(() => this.router.navigate(['/']), 3000);
       }
     });
+  }
+
+  getProgress(): number {
+    return this.totalQuestions > 0 ? (this.answeredCount / this.totalQuestions) * 100 : 0;
   }
 }

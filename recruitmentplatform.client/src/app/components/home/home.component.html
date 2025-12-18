@@ -1,97 +1,94 @@
 <div class="container">
-  <!-- Show for logged in users -->
+  <!-- Logged In View -->
   <div *ngIf="isLoggedIn; else guestView">
     <div class="hero-section bg-primary text-white rounded p-5 mb-4">
       <h1 class="display-4">My Applications</h1>
-      <p class="lead">View your applied positions and start interviews</p>
+      <p class="lead mb-4">View your applied positions and start interviews</p>
+      <button routerLink="/" class="btn btn-outline-light">Browse More Positions</button>
     </div>
 
+    <!-- Loading -->
     <div *ngIf="loading" class="text-center py-5">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
     </div>
 
+    <!-- No Applications -->
     <div *ngIf="!loading && myApplications.length === 0" class="alert alert-info">
       <h4>No applications found</h4>
       <p>You haven't applied for any positions yet.</p>
       <a routerLink="/" class="btn btn-primary">Browse Positions</a>
     </div>
 
+    <!-- Applications Grid -->
     <div class="row" *ngIf="!loading && myApplications.length > 0">
       <div class="col-md-6 col-lg-4 mb-4" *ngFor="let app of myApplications">
         <div class="card h-100 shadow-sm">
-          <div class="card-header bg-light">
+          <div class="card-header bg-light d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0">{{ app.positionTitle }}</h5>
+            <span class="badge" [ngClass]="app.interviewStatus === 'Completed' ? 'bg-success' : 'bg-warning'">
+              {{ app.interviewStatus }}
+            </span>
           </div>
           <div class="card-body">
             <div class="mb-3">
               <span class="badge bg-secondary me-2">{{ app.techStack }}</span>
-              <span class="badge" [ngClass]="app.interviewStatus === 'Completed' ? 'bg-success' : 'bg-warning'">
-                {{ app.interviewStatus }}
-              </span>
             </div>
             <p class="text-muted mb-2">
-              <small>Applied on: {{ app.appliedAt }}</small>
+              <i class="bi bi-calendar me-1"></i> Applied: {{ app.appliedAt }}
             </p>
-            <p class="text-muted mb-2">
-              <small>Interview Number: <code>{{ app.interviewNumber }}</code></small>
+            <p class="text-muted mb-0">
+              <i class="bi bi-123 me-1"></i> Interview #{{ app.interviewNumber }}
             </p>
           </div>
           <div class="card-footer bg-transparent">
-            <div class="d-flex gap-2">
-              <!-- Show Start Interview if not completed -->
-              <button *ngIf="app.interviewStatus === 'Pending'"
-                      class="btn btn-primary flex-fill"
-                      (click)="startInterview(app.latestSessionId || '')">
-                <i class="bi bi-play-circle me-2"></i>Start Interview
-              </button>
-              
-              <!-- Show View Results if completed -->
-              <button *ngIf="app.interviewStatus === 'Completed'"
-                      class="btn btn-success flex-fill"
-                      routerLink="/results">
-                <i class="bi bi-check-circle me-2"></i>View Results
-              </button>
-              
-              <!-- Always show details button -->
-              <button class="btn btn-outline-secondary">
-                <i class="bi bi-info-circle"></i>
-              </button>
-            </div>
+            <!-- FUNCTIONAL BUTTONS ONLY -->
+            <button *ngIf="app.interviewStatus === 'Pending'" 
+                    class="btn btn-primary w-100 mb-2"
+                    (click)="startInterview(app.latestSessionId || '')">
+              <i class="bi bi-play-circle me-2"></i>Start Interview
+            </button>
+            <button *ngIf="app.interviewStatus === 'Completed'" 
+                    class="btn btn-success w-100 mb-2"
+                    routerLink="/results">
+              <i class="bi bi-check-circle me-2"></i>View Results
+            </button>
+            <!-- REMOVED: Non-functional buttons -->
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Guest view (ng-template) -->
+  <!-- Guest View -->
   <ng-template #guestView>
-    <div class="hero-section bg-gradient rounded p-5 mb-4 text-center text-white">
+    <div class="hero-section bg-gradient text-white rounded p-5 mb-4 text-center">
       <h1 class="display-4">.NET Recruitment Platform</h1>
-      <p class="lead mb-4">Find your next career opportunity</p>
-      <button routerLink="/login" class="btn btn-light btn-lg">
-        Login to View Your Applications
-      </button>
+      <p class="lead mb-4">Find your next career opportunity in .NET ecosystem</p>
+      <div class="d-flex justify-content-center gap-3">
+        <button routerLink="/" class="btn btn-light btn-lg">Browse Positions</button>
+        <button routerLink="/login" class="btn btn-outline-light btn-lg">Login</button>
+      </div>
     </div>
 
+    <!-- Loading -->
     <div *ngIf="loading" class="text-center py-5">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
     </div>
 
+    <!-- Positions -->
     <div class="row" *ngIf="!loading">
       <div class="col-md-6 col-lg-4 mb-4" *ngFor="let position of positions">
-        <div class="card shadow-sm h-100">
+        <div class="card h-100 shadow-sm">
           <div class="card-body">
             <h5 class="card-title">{{ position.title }}</h5>
-            <p class="card-text">{{ position.description }}</p>
+            <p class="card-text">{{ position.description | slice:0:100 }}...</p>
             <div class="mb-3">
               <span class="badge bg-primary me-1">{{ position.level }}</span>
-              <span class="badge bg-secondary">{{ position.location }}</span>
-            </div>
-            <div class="mb-3">
+              <span class="badge bg-secondary me-1">{{ position.location }}</span>
               <span *ngFor="let tech of getTechStackList(position.techStack)" 
                     class="badge bg-info me-1">
                 {{ tech }}
