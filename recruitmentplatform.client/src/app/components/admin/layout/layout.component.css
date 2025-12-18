@@ -1,0 +1,28 @@
+/* layout.component.css */
+.sidebar {
+  min-height: calc(100vh - 56px);
+  border-right: 1px solid #dee2e6;
+}
+
+.nav-link {
+  color: #333;
+  padding: 12px 20px;
+  border-radius: 0;
+}
+
+.nav-link:hover {
+  background-color: #e9ecef;
+}
+
+.nav-link.active {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  font-weight: 500;
+  border-left: 3px solid #1976d2;
+}
+
+.admin-content {
+  padding: 20px;
+  background-color: #fafafa;
+  min-height: calc(100vh - 56px);
+}

@@ -1,0 +1,76 @@
+<!-- settings.component.html -->
+<div class="settings-container">
+  <h2>Interview Settings</h2>
+
+  <ngb-alert *ngIf="showAlert" [type]="alertType" [dismissible]="true" (closed)="showAlert = false">
+    {{ alertMessage }}
+  </ngb-alert>
+
+  <div class="card settings-card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">Configure Interview Parameters</h5>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()">
+        <div class="mb-3">
+          <label for="passThreshold" class="form-label">Pass Threshold (%)</label>
+          <input type="number" class="form-control" id="passThreshold" 
+                 formControlName="passThresholdPercentage" min="50" max="100" required>
+          <div class="form-text">Minimum score required to pass (50-100)</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="timeLimit" class="form-label">Question Time Limit (seconds)</label>
+          <input type="number" class="form-control" id="timeLimit" 
+                 formControlName="questionTimeLimitSeconds" min="30" max="300" required>
+          <div class="form-text">Time per question (30-300 seconds)</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="questionsPerSection" class="form-label">Questions per Section</label>
+          <input type="number" class="form-control" id="questionsPerSection" 
+                 formControlName="totalQuestionsPerSection" min="3" max="20" required>
+          <div class="form-text">Number of questions in each section (3-20)</div>
+        </div>
+
+        <div class="toggle-section mb-4">
+          <div class="form-check form-switch me-4">
+            <input class="form-check-input" type="checkbox" id="randomize" 
+                   formControlName="randomizeQuestions">
+            <label class="form-check-label" for="randomize">Randomize Question Order</label>
+          </div>
+
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="emailNotifications" 
+                   formControlName="emailNotificationsEnabled">
+            <label class="form-check-label" for="emailNotifications">Enable Email Notifications</label>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-outline-secondary" (click)="resetToDefaults()">
+            Reset to Defaults
+          </button>
+          <button type="submit" class="btn btn-primary">
+            Save Settings
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card info-card">
+    <div class="card-header">
+      <h5 class="mb-0">Current Configuration</h5>
+    </div>
+    <div class="card-body">
+      <ul class="list-unstyled mb-0">
+        <li class="config-item"><strong>Pass Rate:</strong> {{ settingsForm.value.passThresholdPercentage }}%</li>
+        <li class="config-item"><strong>Time Limit:</strong> {{ settingsForm.value.questionTimeLimitSeconds }} seconds</li>
+        <li class="config-item"><strong>Questions per Section:</strong> {{ settingsForm.value.totalQuestionsPerSection }}</li>
+        <li class="config-item"><strong>Randomization:</strong> {{ settingsForm.value.randomizeQuestions ? 'Enabled' : 'Disabled' }}</li>
+        <li class="config-item"><strong>Email Notifications:</strong> {{ settingsForm.value.emailNotificationsEnabled ? 'Enabled' : 'Disabled' }}</li>
+      </ul>
+    </div>
+  </div>
+</div>

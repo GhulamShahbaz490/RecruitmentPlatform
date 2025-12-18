@@ -1,0 +1,59 @@
+<!-- interview.component.html -->
+<div class="interview-container" *ngIf="currentQuestion && !isLoading; else loadingTemplate">
+  <ngb-alert *ngIf="alertMessage" [type]="alertType" (closed)="alertMessage = ''" [dismissible]="true">
+    {{ alertMessage }}
+  </ngb-alert>
+
+  <header class="interview-header">
+    <h2>Section: {{ currentQuestion.section }}</h2>
+    <div class="timer" [class.warning]="isTimeWarning()">
+      Time: {{ timeLeft }}{{ typeof timeLeft === 'number' ? 's' : '' }}
+    </div>
+  </header>
+
+  <ngb-progressbar [value]="getProgress()" [striped]="true" [animated]="true" 
+                   [type]="isTimeWarning() ? 'danger' : 'primary'" class="mb-3">
+  </ngb-progressbar>
+
+  <div class="card question-card">
+    <div class="card-header">
+      <h5 class="mb-0">Question {{ answeredCount + 1 }}</h5>
+    </div>
+
+    <div class="card-body">
+      <p class="question-text">{{ currentQuestion.text }}</p>
+      
+      <div class="options">
+        <div class="form-check option-item" *ngFor="let option of currentQuestion.options; let i = index">
+          <input class="form-check-input" type="radio" 
+                 [id]="'option' + i" 
+                 name="answer" 
+                 [value]="i"
+                 [(ngModel)]="selectedAnswer"
+                 [disabled]="isSubmitting">
+          <label class="form-check-label" [for]="'option' + i">
+            {{ option }}
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-footer text-end">
+      <button class="btn btn-primary" 
+              (click)="onSubmitAnswer()"
+              [disabled]="isSubmitting">
+        <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status"></span>
+        {{ isSubmitting ? 'Submitting...' : 'Submit Answer' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<ng-template #loadingTemplate>
+  <div class="loading text-center py-5">
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3">Loading interview...</p>
+  </div>
+</ng-template>

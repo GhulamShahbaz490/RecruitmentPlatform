@@ -1,0 +1,14 @@
+/* position-management.component.css */
+.position-management {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.position-management h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.form-card, .table-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}

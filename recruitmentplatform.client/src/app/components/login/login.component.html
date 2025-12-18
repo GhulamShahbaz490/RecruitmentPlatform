@@ -1,0 +1,38 @@
+<!-- login.component.html -->
+<div class="login-container">
+  <div class="card login-card">
+    <div class="card-header">
+      <h4 class="card-title mb-1">Interview Login</h4>
+      <small class="text-muted">Enter your credentials to start the interview</small>
+    </div>
+
+    <div class="card-body">
+      <ngb-alert *ngIf="alertMessage" [type]="alertType" (closed)="alertMessage = ''" [dismissible]="true">
+        {{ alertMessage }}
+      </ngb-alert>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" class="form-control" id="email" formControlName="email"
+                 [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+          <div class="invalid-feedback">Please enter a valid email</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="pinCode" class="form-label">PIN Code</label>
+          <input type="password" class="form-control" id="pinCode" formControlName="pinCode"
+                 [class.is-invalid]="loginForm.get('pinCode')?.invalid && loginForm.get('pinCode')?.touched">
+          <small class="form-text text-muted">6-digit code from your email</small>
+          <div class="invalid-feedback">Please enter a valid 6-digit PIN</div>
+        </div>
+
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary">
+            Start Interview
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

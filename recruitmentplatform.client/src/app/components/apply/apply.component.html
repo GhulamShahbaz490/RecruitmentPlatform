@@ -1,0 +1,73 @@
+<!-- apply.component.html -->
+<div class="container">
+  <div class="card apply-card">
+    <div class="card-header">
+      <h4 class="card-title mb-0">Apply for Position</h4>
+    </div>
+    
+    <div class="card-body">
+      <ngb-alert *ngIf="alertMessage" [type]="alertType" (closed)="alertMessage = ''" [dismissible]="true">
+        {{ alertMessage }}
+      </ngb-alert>
+
+      <form [formGroup]="applicationForm" (ngSubmit)="onSubmit()">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="firstName" class="form-label">First Name</label>
+            <input type="text" class="form-control" id="firstName" formControlName="firstName" 
+                   [class.is-invalid]="applicationForm.get('firstName')?.invalid && applicationForm.get('firstName')?.touched">
+            <div class="invalid-feedback">First name is required</div>
+          </div>
+
+          <div class="col-md-6">
+            <label for="lastName" class="form-label">Last Name</label>
+            <input type="text" class="form-control" id="lastName" formControlName="lastName"
+                   [class.is-invalid]="applicationForm.get('lastName')?.invalid && applicationForm.get('lastName')?.touched">
+            <div class="invalid-feedback">Last name is required</div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" class="form-control" id="email" formControlName="email"
+                 [class.is-invalid]="applicationForm.get('email')?.invalid && applicationForm.get('email')?.touched">
+          <div class="invalid-feedback">
+            <span *ngIf="applicationForm.get('email')?.hasError('required')">Email is required</span>
+            <span *ngIf="applicationForm.get('email')?.hasError('email')">Please enter a valid email</span>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="phone" class="form-label">Phone</label>
+          <input type="text" class="form-control" id="phone" formControlName="phone"
+                 [class.is-invalid]="applicationForm.get('phone')?.invalid && applicationForm.get('phone')?.touched">
+          <div class="invalid-feedback">Phone is required</div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">Resume (PDF)</label>
+          <div class="file-upload">
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept=".pdf" class="d-none">
+            <button type="button" class="btn btn-outline-primary" (click)="fileInput.click()">
+              Upload Resume (PDF)
+            </button>
+            <span class="file-name ms-3" *ngIf="selectedFile">
+              {{ selectedFile.name }}
+            </span>
+          </div>
+          <div class="text-danger mt-1" *ngIf="applicationForm.get('resume')?.hasError('required') && applicationForm.get('resume')?.touched">
+            Resume is required
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end">
+          <button type="submit" class="btn btn-primary" [disabled]="submitting">
+            <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <span *ngIf="!submitting">Submit Application</span>
+            <span *ngIf="submitting">Submitting...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

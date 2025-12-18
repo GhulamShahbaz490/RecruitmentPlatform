@@ -1,0 +1,62 @@
+<!-- results.component.html -->
+<div class="results-container" *ngIf="result">
+  <div class="card results-card">
+    <div class="card-header">
+      <h4 class="card-title mb-1">Interview Results</h4>
+      <small class="text-muted">Interview Number: {{ result.interviewNumber }}</small>
+    </div>
+
+    <div class="card-body">
+      <div class="score-overview">
+        <div class="overall-score" [style.color]="getStatusColor()">
+          <h1>{{ result.percentage | number:'1.1-1' }}%</h1>
+          <h2>{{ result.status === 'Pass' ? 'Congratulations!' : 'Better Luck Next Time' }}</h2>
+        </div>
+
+        <div class="score-details">
+          <p><strong>Total Score:</strong> {{ result.totalScore }} / {{ result.maxPossibleScore }}</p>
+          <p><strong>Applicant:</strong> {{ result.applicantName }}</p>
+        </div>
+
+        <hr>
+
+        <h5>Section Breakdown</h5>
+        <div class="section-scores" *ngFor="let section of getSectionKeys()">
+          <div class="section-header">
+            <span>{{ section }}</span>
+            <span>{{ result.sectionScores[section].score }} / {{ result.sectionScores[section].maxScore }}</span>
+          </div>
+          <ngb-progressbar 
+            [value]="result.sectionScores[section].percentage" 
+            [type]="result.sectionScores[section].percentage >= 60 ? 'success' : 'danger'"
+            [striped]="true"
+            class="mb-1">
+          </ngb-progressbar>
+          <small class="text-muted">{{ result.sectionScores[section].percentage | number:'1.1-1' }}%</small>
+        </div>
+
+        <div class="next-steps mt-4" *ngIf="result.status === 'Pass'">
+          <div class="alert alert-success success-card">
+            <h5>Next Steps</h5>
+            <p class="mb-2">You have been selected for the physical interview round! Our team will contact you within 24-48 hours to schedule your in-person interview.</p>
+            <p class="mb-0">Please keep your interview number handy: <strong>{{ result.interviewNumber }}</strong></p>
+          </div>
+        </div>
+
+        <div class="next-steps mt-4" *ngIf="result.status !== 'Pass'">
+          <div class="alert alert-danger failure-card">
+            <h5>Feedback</h5>
+            <p class="mb-2">We appreciate your interest and effort. Unfortunately, you did not meet the minimum threshold for this position.</p>
+            <p class="mb-0">You can apply for other positions that match your skills better.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-footer text-end">
+      <button class="btn btn-primary" (click)="goHome()">
+        Back to Home
+      </button>
+    </div>
+  </div>
+</div>

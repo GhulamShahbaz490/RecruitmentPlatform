@@ -1,0 +1,60 @@
+/* results.component.css */
+.results-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.results-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.score-overview {
+  text-align: center;
+}
+
+.overall-score {
+  margin-bottom: 30px;
+}
+
+.overall-score h1 {
+  font-size: 4rem;
+  margin: 0;
+}
+
+.overall-score h2 {
+  margin: 10px 0;
+}
+
+.score-details {
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+}
+
+.section-scores {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.section-scores small {
+  color: #666;
+}
+
+.next-steps {
+  margin-top: 30px;
+}
+
+.success-card {
+  border-left: 4px solid #4CAF50;
+}
+
+.failure-card {
+  border-left: 4px solid #f44336;
+}

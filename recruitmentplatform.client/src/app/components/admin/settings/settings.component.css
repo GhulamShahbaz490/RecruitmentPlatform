@@ -1,0 +1,32 @@
+/* settings.component.css */
+.settings-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.settings-container h2 {
+  margin-bottom: 20px;
+}
+
+.settings-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-section {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.info-card {
+  background-color: #e3f2fd;
+}
+
+.config-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #90caf9;
+}
+
+.config-item:last-child {
+  border-bottom: none;
+}

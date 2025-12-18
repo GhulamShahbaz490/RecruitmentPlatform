@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="recruitmentplatform.client/recruitmentplatform.client.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="RecruitmentPlatform.Server/RecruitmentPlatform.Server.csproj" />
+</Solution>

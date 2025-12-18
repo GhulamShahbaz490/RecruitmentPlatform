@@ -1,0 +1,20 @@
+/* question-management.component.css */
+.question-management {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.question-management h2 {
+  margin-bottom: 20px;
+}
+
+.form-card, .table-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.question-text {
+  max-width: 400px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

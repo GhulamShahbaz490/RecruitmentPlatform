@@ -1,0 +1,111 @@
+<div class="container">
+  <!-- Show for logged in users -->
+  <div *ngIf="isLoggedIn; else guestView">
+    <div class="hero-section bg-primary text-white rounded p-5 mb-4">
+      <h1 class="display-4">My Applications</h1>
+      <p class="lead">View your applied positions and start interviews</p>
+    </div>
+
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && myApplications.length === 0" class="alert alert-info">
+      <h4>No applications found</h4>
+      <p>You haven't applied for any positions yet.</p>
+      <a routerLink="/" class="btn btn-primary">Browse Positions</a>
+    </div>
+
+    <div class="row" *ngIf="!loading && myApplications.length > 0">
+      <div class="col-md-6 col-lg-4 mb-4" *ngFor="let app of myApplications">
+        <div class="card h-100 shadow-sm">
+          <div class="card-header bg-light">
+            <h5 class="card-title mb-0">{{ app.positionTitle }}</h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <span class="badge bg-secondary me-2">{{ app.techStack }}</span>
+              <span class="badge" [ngClass]="app.interviewStatus === 'Completed' ? 'bg-success' : 'bg-warning'">
+                {{ app.interviewStatus }}
+              </span>
+            </div>
+            <p class="text-muted mb-2">
+              <small>Applied on: {{ app.appliedAt }}</small>
+            </p>
+            <p class="text-muted mb-2">
+              <small>Interview Number: <code>{{ app.interviewNumber }}</code></small>
+            </p>
+          </div>
+          <div class="card-footer bg-transparent">
+            <div class="d-flex gap-2">
+              <!-- Show Start Interview if not completed -->
+              <button *ngIf="app.interviewStatus === 'Pending'"
+                      class="btn btn-primary flex-fill"
+                      (click)="startInterview(app.latestSessionId || '')">
+                <i class="bi bi-play-circle me-2"></i>Start Interview
+              </button>
+              
+              <!-- Show View Results if completed -->
+              <button *ngIf="app.interviewStatus === 'Completed'"
+                      class="btn btn-success flex-fill"
+                      routerLink="/results">
+                <i class="bi bi-check-circle me-2"></i>View Results
+              </button>
+              
+              <!-- Always show details button -->
+              <button class="btn btn-outline-secondary">
+                <i class="bi bi-info-circle"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Guest view (ng-template) -->
+  <ng-template #guestView>
+    <div class="hero-section bg-gradient rounded p-5 mb-4 text-center text-white">
+      <h1 class="display-4">.NET Recruitment Platform</h1>
+      <p class="lead mb-4">Find your next career opportunity</p>
+      <button routerLink="/login" class="btn btn-light btn-lg">
+        Login to View Your Applications
+      </button>
+    </div>
+
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <div class="row" *ngIf="!loading">
+      <div class="col-md-6 col-lg-4 mb-4" *ngFor="let position of positions">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="card-title">{{ position.title }}</h5>
+            <p class="card-text">{{ position.description }}</p>
+            <div class="mb-3">
+              <span class="badge bg-primary me-1">{{ position.level }}</span>
+              <span class="badge bg-secondary">{{ position.location }}</span>
+            </div>
+            <div class="mb-3">
+              <span *ngFor="let tech of getTechStackList(position.techStack)" 
+                    class="badge bg-info me-1">
+                {{ tech }}
+              </span>
+            </div>
+          </div>
+          <div class="card-footer bg-transparent">
+            <button routerLink="/apply/{{ position.id }}" 
+                    class="btn btn-primary w-100">
+              Apply Now
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</div>
