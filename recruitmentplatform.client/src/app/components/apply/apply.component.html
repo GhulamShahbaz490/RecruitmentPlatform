@@ -1,15 +1,64 @@
 <!-- apply.component.html -->
 <div class="container">
-  <div class="card apply-card">
+  <!-- Email Credentials Card - Show after successful submission -->
+  <div class="card email-credentials-card mb-4" *ngIf="emailSent && applicationData">
+    <div class="card-header bg-success text-white">
+      <h5 class="card-title mb-0">
+        <i class="bi bi-envelope-check"></i> Email Sent Successfully
+      </h5>
+    </div>
+
+    <div class="card-body">
+      <div class="alert alert-success mb-3">
+        <strong>Welcome {{ applicationData.firstName }}!</strong>
+        <p class="mb-0">Your interview credentials have been sent to <strong>{{ applicationData.email }}</strong></p>
+      </div>
+
+      <div class="credentials-section">
+        <h6 class="text-muted mb-3">Your Interview Credentials</h6>
+        
+        <div class="credential-item">
+          <label>Interview Number</label>
+          <div class="credential-value">
+            {{ applicationData.interviewNumber }}
+            <button class="btn btn-sm btn-outline-secondary ms-2" (click)="copyToClipboard(applicationData.interviewNumber)">
+              Copy
+            </button>
+          </div>
+        </div>
+
+        <div class="credential-item mt-3">
+          <label>Email Subject</label>
+          <div class="credential-value">
+            Your Interview Credentials - Recruitment Platform
+          </div>
+        </div>
+
+        <div class="alert alert-info mt-4 mb-3">
+          <i class="bi bi-info-circle"></i>
+          <strong>Important:</strong> Please check your inbox and spam folder for the email. 
+          You will need your interview credentials to start the interview.
+        </div>
+      </div>
+    </div>
+
+    <div class="card-footer d-flex gap-2 justify-content-between">
+      <button class="btn btn-secondary" (click)="goBack()">
+        Back to Positions
+      </button>
+      <button class="btn btn-success" (click)="proceedToInterview()">
+        Proceed to Interview <i class="bi bi-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Application Form - Show before submission -->
+  <div class="card apply-card" *ngIf="!emailSent">
     <div class="card-header">
       <h4 class="card-title mb-0">Apply for Position</h4>
     </div>
     
     <div class="card-body">
-      <ngb-alert *ngIf="alertMessage" [type]="alertType" (closed)="alertMessage = ''" [dismissible]="true">
-        {{ alertMessage }}
-      </ngb-alert>
-
       <form [formGroup]="applicationForm" (ngSubmit)="onSubmit()">
         <div class="row mb-3">
           <div class="col-md-6">

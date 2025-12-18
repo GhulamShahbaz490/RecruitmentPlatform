@@ -15,7 +15,7 @@ namespace RecruitmentPlatform.Server.Services
             _logger = logger;
         }
 
-        public async Task<AdminUser?> AuthenticateAsync(string email, string password)
+        public async Task<AdminUser> AuthenticateAsync(string email, string password)
         {
             // In production, use Microsoft.AspNetCore.Identity with proper hashing
             var admin = await _context.AdminUsers

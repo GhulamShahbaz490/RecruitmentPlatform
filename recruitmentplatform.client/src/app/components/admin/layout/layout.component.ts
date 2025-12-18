@@ -2,9 +2,10 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-import { NgbCollapseModule, NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCollapseModule } from '@ng-bootstrap/ng-bootstrap';
 import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-admin-layout',
@@ -15,16 +16,13 @@ import { Router } from '@angular/router';
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
-    NgbCollapseModule,
-    NgbAlertModule
+    NgbCollapseModule
   ],
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.css']
 })
 export class AdminLayoutComponent {
   adminName = '';
-  alertMessage = '';
-  alertType = 'success';
   isCollapsed = false;
 
   navItems = [
@@ -41,15 +39,9 @@ export class AdminLayoutComponent {
     this.adminName = this.authService.getAdminName() || 'Admin';
   }
 
-  showAlert(message: string, type: string = 'success'): void {
-    this.alertMessage = message;
-    this.alertType = type;
-    setTimeout(() => this.alertMessage = '', 3000);
-  }
-
   logout(): void {
     this.authService.logoutAdmin();
-    this.showAlert('Logged out successfully');
+    Swal.fire({ text: 'Logged out successfully', icon: 'success', timer: 1500, showConfirmButton: false });
     this.router.navigate(['/admin/login']);
   }
 }

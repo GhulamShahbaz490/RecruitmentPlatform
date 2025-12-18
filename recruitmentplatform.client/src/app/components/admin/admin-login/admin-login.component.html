@@ -6,10 +6,6 @@
       <small class="text-muted">Recruitment Platform Administration</small>
     </div>
     <div class="card-body">
-      <ngb-alert *ngIf="showAlert" [type]="alertType" [dismissible]="true" (closed)="showAlert = false">
-        {{ alertMessage }}
-      </ngb-alert>
-
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <div class="mb-3">
           <label for="email" class="form-label">Email</label>

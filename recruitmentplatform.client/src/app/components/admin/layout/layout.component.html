@@ -27,9 +27,6 @@
     </nav>
 
     <main class="col-md-10 ms-sm-auto px-md-4 admin-content">
-      <ngb-alert *ngIf="alertMessage" [type]="alertType" (closed)="alertMessage = ''" [dismissible]="true">
-        {{ alertMessage }}
-      </ngb-alert>
       <router-outlet></router-outlet>
     </main>
   </div>

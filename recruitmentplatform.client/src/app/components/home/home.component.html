@@ -2,9 +2,9 @@
   <!-- Logged In View -->
   <div *ngIf="isLoggedIn; else guestView">
     <div class="hero-section bg-primary text-white rounded p-5 mb-4">
-      <h1 class="display-4">My Applications</h1>
-      <p class="lead mb-4">View your applied positions and start interviews</p>
-      <button routerLink="/" class="btn btn-outline-light">Browse More Positions</button>
+      <h1 class="display-4 text-white">My Applications</h1>
+      <p class="lead mb-4 text-white">View your applied positions and start interviews</p>
+      <button type="button" [routerLink]="['/positions']" class="btn btn-outline-light">Browse More Positions</button>
     </div>
 
     <!-- Loading -->
@@ -18,7 +18,7 @@
     <div *ngIf="!loading && myApplications.length === 0" class="alert alert-info">
       <h4>No applications found</h4>
       <p>You haven't applied for any positions yet.</p>
-      <a routerLink="/" class="btn btn-primary">Browse Positions</a>
+      <a [routerLink]="['/positions']" class="btn btn-primary">Browse Positions</a>
     </div>
 
     <!-- Applications Grid -->
@@ -46,12 +46,13 @@
             <!-- FUNCTIONAL BUTTONS ONLY -->
             <button *ngIf="app.interviewStatus === 'Pending'" 
                     class="btn btn-primary w-100 mb-2"
-                    (click)="startInterview(app.latestSessionId || '')">
+                    (click)="startInterview(app.latestSessionId || app.LatestSessionId || '')">
               <i class="bi bi-play-circle me-2"></i>Start Interview
             </button>
             <button *ngIf="app.interviewStatus === 'Completed'" 
                     class="btn btn-success w-100 mb-2"
-                    routerLink="/results">
+                    [routerLink]="['/results']"
+                    [queryParams]="{ sessionId: app.latestSessionId || app.LatestSessionId }">
               <i class="bi bi-check-circle me-2"></i>View Results
             </button>
             <!-- REMOVED: Non-functional buttons -->
@@ -64,11 +65,11 @@
   <!-- Guest View -->
   <ng-template #guestView>
     <div class="hero-section bg-gradient text-white rounded p-5 mb-4 text-center">
-      <h1 class="display-4">.NET Recruitment Platform</h1>
-      <p class="lead mb-4">Find your next career opportunity in .NET ecosystem</p>
+      <h1 class="display-4 text-white">.NET Recruitment Platform</h1>
+      <p class="lead mb-4 text-white">Find your next career opportunity in .NET ecosystem</p>
       <div class="d-flex justify-content-center gap-3">
-        <button routerLink="/" class="btn btn-light btn-lg">Browse Positions</button>
-        <button routerLink="/login" class="btn btn-outline-light btn-lg">Login</button>
+        <button type="button" [routerLink]="['/positions']" class="btn btn-light btn-lg">Browse Positions</button>
+        <button [routerLink]="['/login']" class="btn btn-outline-light btn-lg">Login</button>
       </div>
     </div>
 
@@ -96,7 +97,7 @@
             </div>
           </div>
           <div class="card-footer bg-transparent">
-            <button routerLink="/apply/{{ position.id }}" 
+            <button [routerLink]="['/apply', position.id]" 
                     class="btn btn-primary w-100">
               Apply Now
             </button>

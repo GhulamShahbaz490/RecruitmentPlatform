@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-apply',
@@ -26,6 +27,8 @@ export class ApplyComponent {
   alertType: string = 'danger';
   applicationForm: ReturnType<FormBuilder['group']>;
   selectedFile: File | null = null;
+  emailSent = false;
+  applicationData: any = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -45,9 +48,8 @@ export class ApplyComponent {
   }
 
   showAlert(message: string, type: string = 'danger'): void {
-    this.alertMessage = message;
-    this.alertType = type;
-    setTimeout(() => this.alertMessage = '', 5000);
+    const icon = type === 'success' ? 'success' : (type === 'warning' ? 'warning' : 'error');
+    Swal.fire({ text: message, icon, confirmButtonText: 'OK' });
   }
 
   onFileSelected(event: any): void {
@@ -57,13 +59,13 @@ export class ApplyComponent {
       this.applicationForm.patchValue({ resume: file });
     } else {
       this.selectedFile = null;
-      this.showAlert('Please select a PDF file');
+      this.showAlert('Please select a PDF file', 'warning');
     }
   }
 
   onSubmit(): void {
     if (this.applicationForm.invalid) {
-      this.showAlert('Please fill all required fields');
+      this.showAlert('Please fill all required fields', 'warning');
       return;
     }
 
@@ -78,23 +80,43 @@ export class ApplyComponent {
 
     this.apiService.apply(formData).subscribe({
       next: (response) => {
-        this.showAlert('Application submitted! Check your email for credentials.', 'success');
-        this.authService.login({ 
-          email: this.applicationForm.value.email || '', 
-          pinCode: response.interviewNumber.split('-')[2] // Extract PIN from number
-        }).subscribe({
-          next: () => {
-            this.router.navigate(['/interview']);
-          },
-          error: () => {
-            this.router.navigate(['/login']);
-          }
-        });
+        this.emailSent = true;
+        this.applicationData = {
+          email: this.applicationForm.value.email,
+          interviewNumber: response.interviewNumber,
+          firstName: this.applicationForm.value.firstName
+        };
+        // Don't auto-login, let user view credentials first
+        this.submitting = false;
       },
       error: (err) => {
-        this.showAlert(err.error?.message || 'Failed to submit application');
+        this.showAlert(err.error?.message || 'Failed to submit application', 'error');
         this.submitting = false;
       }
     });
+  }
+
+  proceedToInterview(): void {
+    this.authService.login({ 
+      email: this.applicationData.email || '', 
+      pinCode: this.applicationData.interviewNumber.split('-')[2] // Extract PIN from number
+    }).subscribe({
+      next: () => {
+        this.router.navigate(['/interview']);
+      },
+      error: () => {
+        this.router.navigate(['/login']);
+      }
+    });
+  }
+
+  copyToClipboard(text: string): void {
+    navigator.clipboard.writeText(text).then(() => {
+      this.showAlert('Interview number copied to clipboard!', 'success');
+    });
+  }
+
+  goBack(): void {
+    this.router.navigate(['/home']);
   }
 }

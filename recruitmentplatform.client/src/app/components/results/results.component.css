@@ -9,6 +9,66 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.email-notification-card {
+  border-top: 4px solid #17a2b8;
+  box-shadow: 0 4px 12px rgba(23, 162, 184, 0.15);
+  margin-bottom: 30px;
+}
+
+.email-notification-card .card-header {
+  background-color: #17a2b8;
+  border: none;
+  border-radius: 4px 4px 0 0;
+  padding: 1rem 1.25rem;
+}
+
+.email-notification-card .card-header h5 {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.email-notification-card .card-header i {
+  margin-right: 8px;
+  font-size: 1.2rem;
+}
+
+.email-notification-card .card-body {
+  padding: 1.5rem 1.25rem;
+}
+
+.email-details {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 4px;
+  margin-top: 15px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-row label {
+  font-weight: 600;
+  color: #333;
+  min-width: 120px;
+}
+
+.detail-value {
+  color: #555;
+  word-break: break-word;
+  text-align: right;
+  flex: 1;
+}
+
 .score-overview {
   text-align: center;
 }
@@ -57,4 +117,15 @@
 
 .failure-card {
   border-left: 4px solid #f44336;
+}
+
+@media (max-width: 768px) {
+  .detail-row {
+    flex-direction: column;
+  }
+  
+  .detail-value {
+    text-align: left;
+    margin-top: 8px;
+  }
 }

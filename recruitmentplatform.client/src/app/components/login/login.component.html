@@ -7,10 +7,6 @@
     </div>
 
     <div class="card-body">
-      <ngb-alert *ngIf="alertMessage" [type]="alertType" (closed)="alertMessage = ''" [dismissible]="true">
-        {{ alertMessage }}
-      </ngb-alert>
-
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <div class="mb-3">
           <label for="email" class="form-label">Email</label>

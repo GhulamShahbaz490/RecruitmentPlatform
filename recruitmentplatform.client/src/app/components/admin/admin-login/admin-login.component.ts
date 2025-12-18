@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
 import { AuthService } from '../../../services/auth.service';
 import { AdminLoginDto } from '../../../models/admin.model';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-admin-login',
@@ -20,9 +21,6 @@ import { AdminLoginDto } from '../../../models/admin.model';
 })
 export class AdminLoginComponent {
   loginForm: FormGroup;
-  alertMessage = '';
-  alertType: 'success' | 'danger' = 'success';
-  showAlert = false;
 
   constructor(
     private fb: FormBuilder,
@@ -37,25 +35,18 @@ export class AdminLoginComponent {
 
   onSubmit(): void {
     if (this.loginForm.invalid) {
-      this.showAlertMessage('Please enter valid credentials', 'danger');
+      Swal.fire({ text: 'Please enter valid credentials', icon: 'warning', confirmButtonText: 'OK' });
       return;
     }
 
     this.authService.loginAdmin(this.loginForm.value as AdminLoginDto).subscribe({
       next: () => {
-        this.showAlertMessage('Admin login successful!', 'success');
+        Swal.fire({ text: 'Admin login successful!', icon: 'success', timer: 1000, showConfirmButton: false });
         setTimeout(() => this.router.navigate(['/admin/dashboard']), 1000);
       },
       error: (err) => {
-        this.showAlertMessage(err.error || 'Invalid admin credentials', 'danger');
+        Swal.fire({ text: err.error || 'Invalid admin credentials', icon: 'error', confirmButtonText: 'OK' });
       }
     });
-  }
-
-  showAlertMessage(message: string, type: 'success' | 'danger'): void {
-    this.alertMessage = message;
-    this.alertType = type;
-    this.showAlert = true;
-    setTimeout(() => this.showAlert = false, 3000);
   }
 }

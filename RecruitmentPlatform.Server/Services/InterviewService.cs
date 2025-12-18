@@ -22,26 +22,44 @@ namespace RecruitmentPlatform.Server.Services
             if (application == null)
                 throw new ArgumentException("Application not found");
 
-            // Check if already has an active session
-            var existingSession = await _context.InterviewSessions
-                .FirstOrDefaultAsync(s => s.ApplicationId == applicationId && s.Status == InterviewStatus.InProgress);
-
-            if (existingSession != null)
-                return existingSession;
-
-            var session = new InterviewSession
+            // Use a serializable transaction to avoid race conditions where two requests
+            // create two in-progress sessions for the same application concurrently.
+            await using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            try
             {
-                ApplicationId = applicationId,
-                Status = InterviewStatus.InProgress,
-                StartedAt = DateTime.UtcNow,
-                MaxPossibleScore = await _context.Questions.SumAsync(q => q.Points)
-            };
+                // Re-check for existing in-progress session inside the transaction
+                var existingSession = await _context.InterviewSessions
+                    .FirstOrDefaultAsync(s => s.ApplicationId == applicationId && s.Status == InterviewStatus.InProgress);
 
-            _context.InterviewSessions.Add(session);
-            await _context.SaveChangesAsync();
+                if (existingSession != null)
+                {
+                    await transaction.CommitAsync();
+                    return existingSession;
+                }
 
-            _logger.LogInformation($"Interview started for application {applicationId}");
-            return session;
+                var session = new InterviewSession
+                {
+                    Id = Guid.NewGuid(),
+                    ApplicationId = applicationId,
+                    Status = InterviewStatus.InProgress,
+                    StartedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.UtcNow,
+                    MaxPossibleScore = await _context.Questions.SumAsync(q => q.Points)
+                };
+
+                _context.InterviewSessions.Add(session);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                _logger.LogInformation($"Interview started for application {applicationId}");
+                return session;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task<InterviewQuestionDto> GetNextQuestionAsync(Guid interviewSessionId)
@@ -102,6 +120,9 @@ namespace RecruitmentPlatform.Server.Services
                 TimeTakenSeconds = answerDto.TimeTakenSeconds
             };
 
+            // Add to the session's navigation collection so in-memory state stays consistent
+            session.Answers.Add(answer);
+            // Also add to DbSet to ensure it will be persisted
             _context.Answers.Add(answer);
 
             if (isCorrect)
@@ -111,7 +132,8 @@ namespace RecruitmentPlatform.Server.Services
 
             // Check if interview is complete
             var totalQuestions = await _context.Questions.CountAsync();
-            var answeredCount = session.Answers.Count;
+            // Use DB count for answers to ensure recently added answer is counted reliably
+            var answeredCount = await _context.Answers.CountAsync(a => a.InterviewSessionId == interviewSessionId);
 
             if (answeredCount >= totalQuestions)
             {
@@ -132,6 +154,33 @@ namespace RecruitmentPlatform.Server.Services
             if (session == null)
                 return null;
 
+            // If already completed, return existing result to avoid duplicate entries
+            var existingResult = await _context.Results.FirstOrDefaultAsync(r => r.InterviewSessionId == interviewSessionId);
+            if (existingResult != null)
+            {
+                return new InterviewResultDto
+                {
+                    InterviewNumber = session.Application.InterviewNumber,
+                    ApplicantName = $"{session.Application.FirstName} {session.Application.LastName}",
+                    Percentage = existingResult.Percentage,
+                    Status = existingResult.Status.ToString(),
+                    TotalScore = existingResult.TotalScore,
+                    MaxPossibleScore = existingResult.MaxPossibleScore,
+                    SectionScores = session.Answers
+                        .GroupBy(a => a.Question.Section)
+                        .ToDictionary(
+                            g => g.Key.ToString(),
+                            g => new SectionScoreDto
+                            {
+                                Score = g.Where(a => a.IsCorrect).Sum(a => a.Question.Points),
+                                MaxScore = g.Sum(a => a.Question.Points),
+                                Percentage = g.Sum(a => a.Question.Points) > 0
+                                    ? (double)g.Where(a => a.IsCorrect).Sum(a => a.Question.Points) / g.Sum(a => a.Question.Points) * 100
+                                    : 0
+                            })
+                };
+            }
+
             session.Status = InterviewStatus.Completed;
             session.CompletedAt = DateTime.UtcNow;
 
@@ -151,7 +200,7 @@ namespace RecruitmentPlatform.Server.Services
                             : 0
                     });
 
-            var percentage = (double)session.TotalScore / session.MaxPossibleScore * 100;
+            var percentage = session.MaxPossibleScore > 0 ? (double)session.TotalScore / session.MaxPossibleScore * 100 : 0;
             var status = percentage >= 70 ? ResultStatus.Pass : ResultStatus.Fail;
 
             var result = new Result

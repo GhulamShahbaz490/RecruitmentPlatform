@@ -1,5 +1,40 @@
 <!-- results.component.html -->
 <div class="results-container" *ngIf="result">
+  <!-- Email Notification Card -->
+  <div class="card email-notification-card mb-4" *ngIf="emailSent">
+    <div class="card-header" [ngClass]="result.status === 'Pass' ? 'bg-success' : 'bg-info'" style="color: white;">
+      <h5 class="card-title mb-0">
+        <i class="bi bi-envelope-check"></i> Interview Result Email Sent
+      </h5>
+    </div>
+
+    <div class="card-body">
+      <div class="alert" [ngClass]="result.status === 'Pass' ? 'alert-success' : 'alert-info'">
+        <strong>Email Notification Sent!</strong>
+        <p class="mb-0">
+          Your interview results have been sent to <strong>{{ getApplicantEmail() }}</strong>
+        </p>
+      </div>
+
+      <div class="email-details">
+        <div class="detail-row">
+          <label>Email Subject:</label>
+          <span class="detail-value">Interview Result - {{ result.status }}</span>
+        </div>
+
+        <div class="detail-row mt-2">
+          <label>Interview Number:</label>
+          <span class="detail-value">{{ result.interviewNumber }}</span>
+        </div>
+
+        <div class="alert alert-info mt-3 mb-0">
+          <i class="bi bi-info-circle"></i>
+          <strong>Note:</strong> If you don't see the email, please check your spam or junk folder.
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="card results-card">
     <div class="card-header">
       <h4 class="card-title mb-1">Interview Results</h4>

@@ -7,6 +7,7 @@ import { takeUntil } from 'rxjs/operators';
 import { NgbAlertModule, NgbProgressbarModule } from '@ng-bootstrap/ng-bootstrap';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-interview',
@@ -68,7 +69,7 @@ export class InterviewComponent implements OnInit, OnDestroy {
         this.loadNextQuestion();
       },
       error: (err) => {
-        this.errorMessage = 'Failed to start interview. Please try again.';
+        Swal.fire('Error', 'Failed to start interview. Please try again.', 'error');
         this.isLoading = false;
         setTimeout(() => this.router.navigate(['/']), 3000);
       }
@@ -98,6 +99,7 @@ export class InterviewComponent implements OnInit, OnDestroy {
         this.startTimer();
       },
       error: (err) => {
+        Swal.fire('Error', 'Failed to load next question.', 'error');
         this.errorMessage = 'Failed to load next question.';
         setTimeout(() => this.completeInterview(), 2000);
       }
@@ -125,8 +127,7 @@ export class InterviewComponent implements OnInit, OnDestroy {
 
   onSubmitAnswer(): void {
     if (this.selectedAnswer === null) {
-      this.errorMessage = 'Please select an answer before submitting.';
-      setTimeout(() => this.errorMessage = null, 3000);
+      Swal.fire('Info', 'Please select an answer before submitting.', 'info');
       return;
     }
     this.submitAnswer();
@@ -151,6 +152,7 @@ export class InterviewComponent implements OnInit, OnDestroy {
         this.loadNextQuestion();
       },
       error: (err) => {
+        Swal.fire('Error', 'Failed to submit answer. Moving to next question.', 'error');
         this.errorMessage = 'Failed to submit answer. Moving to next question.';
         this.isSubmitting = false;
         setTimeout(() => {
@@ -175,6 +177,7 @@ export class InterviewComponent implements OnInit, OnDestroy {
         });
       },
       error: (err) => {
+        Swal.fire('Error', 'Failed to complete interview. Please try again.', 'error');
         this.errorMessage = 'Failed to complete interview. Please try again.';
         this.isLoading = false;
         // Fallback navigation

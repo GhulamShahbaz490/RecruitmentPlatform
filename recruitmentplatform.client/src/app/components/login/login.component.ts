@@ -5,6 +5,7 @@ import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angula
 import { Router } from '@angular/router';
 import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
 import { AuthService } from '../../services/auth.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-login',
@@ -34,14 +35,13 @@ export class LoginComponent {
   }
 
   showAlert(message: string, type: string = 'danger'): void {
-    this.alertMessage = message;
-    this.alertType = type;
-    setTimeout(() => this.alertMessage = '', 5000);
+    const icon = type === 'success' ? 'success' : (type === 'warning' ? 'warning' : 'error');
+    Swal.fire({ text: message, icon, confirmButtonText: 'OK' });
   }
 
   onSubmit(): void {
     if (this.loginForm.invalid) {
-      this.showAlert('Please enter valid credentials');
+      this.showAlert('Please enter valid credentials', 'warning');
       return;
     }
 
@@ -56,7 +56,7 @@ export class LoginComponent {
         this.router.navigate(['/interview']);
       },
       error: (err) => {
-        this.showAlert(err.error || 'Invalid credentials');
+        this.showAlert(err.error || 'Invalid credentials', 'error');
       }
     });
   }

@@ -76,7 +76,7 @@ public class ApplicationsController : ControllerBase
         await _context.SaveChangesAsync();
 
         // Send email
-        //await _emailService.SendInterviewCredentialsAsync(dto.Email, interviewNumber, pinCode);
+        await _emailService.SendInterviewCredentialsAsync(dto.Email, interviewNumber, pinCode);
 
         // Generate JWT for immediate login
         var token = _tokenService.GenerateToken(application);

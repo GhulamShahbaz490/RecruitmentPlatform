@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { Position } from '../models/position.model';
 import {
   RegisterApplicationDto,
@@ -45,19 +45,24 @@ export class ApiService {
 
   // Interview
   startInterview(): Observable<{ sessionId: string }> {
-    return this.http.post<{ sessionId: string }>(
+    return this.http.post<any>(
       `${this.baseUrl}/interview/start`,
       {}
-    );
+    ).pipe(map(response => ({ sessionId: response?.SessionId || response?.sessionId })));
   }
 
-  getNextQuestion(sessionId: string): Observable<InterviewQuestionDto> {
-    return this.http.get<InterviewQuestionDto>(
+  getNextQuestion(sessionId: string): Observable<InterviewQuestionDto | null> {
+    return this.http.get<any>(
       `${this.baseUrl}/interview/next-question`,
       {
         params: { sessionId },
       }
-    );
+    ).pipe(map(response => {
+      // Server may return an object like { Message: 'Interview completed or no more questions' }
+      if (!response) return null;
+      if (response.message || response.Message) return null;
+      return response as InterviewQuestionDto;
+    }));
   }
 
   submitAnswer(
@@ -87,6 +92,14 @@ export class ApiService {
   }
 
   getMyApplications(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/applications/my-applications`);
+    return this.http.get<any[]>(`${this.baseUrl}/applications/my-applications`).pipe(
+      map(apps => apps.map(a => ({
+        // normalize casing so template can use `latestSessionId`
+        ...a,
+        latestSessionId: a.latestSessionId || a.LatestSessionId || null,
+        positionTitle: a.positionTitle || a.PositionTitle || a.positionTitle,
+        techStack: a.techStack || a.TechStack || a.techStack
+      })))
+    );
   }
 }

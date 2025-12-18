@@ -5,6 +5,7 @@ import { ReactiveFormsModule, FormBuilder, Validators, FormArray, FormGroup } fr
 import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
 import { AdminApiService } from '../../../services/admin-api.service';
 import { QuestionManagementDto } from '../../../models/admin.model';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-question-management',
@@ -46,9 +47,8 @@ export class QuestionManagementComponent implements OnInit {
   }
 
   showAlert(message: string, type: string = 'danger'): void {
-    this.alertMessage = message;
-    this.alertType = type;
-    setTimeout(() => this.alertMessage = '', 5000);
+    const icon = type === 'success' ? 'success' : (type === 'warning' ? 'warning' : 'error');
+    Swal.fire({ text: message, icon, confirmButtonText: 'OK' });
   }
 
   loadQuestions(): void {
@@ -57,14 +57,14 @@ export class QuestionManagementComponent implements OnInit {
         this.questions = questions;
       },
       error: () => {
-        this.showAlert('Failed to load questions');
+        this.showAlert('Failed to load questions', 'error');
       }
     });
   }
 
   createQuestion(): void {
     if (this.questionForm.invalid) {
-      this.showAlert('Please fill all required fields');
+      this.showAlert('Please fill all required fields', 'warning');
       return;
     }
 
@@ -76,22 +76,31 @@ export class QuestionManagementComponent implements OnInit {
         this.questionForm.reset({ section: 'Basic', correctAnswerIndex: 0, points: 10 });
       },
       error: () => {
-        this.showAlert('Failed to create question');
+        this.showAlert('Failed to create question', 'error');
       }
     });
   }
 
   deleteQuestion(id: string): void {
-    if (confirm('Are you sure you want to delete this question?')) {
-      this.adminApiService.deleteQuestion(id).subscribe({
-        next: () => {
-          this.showAlert('Question deleted', 'success');
-          this.loadQuestions();
-        },
-        error: () => {
-          this.showAlert('Failed to delete question');
-        }
-      });
-    }
+    Swal.fire({
+      title: 'Are you sure you want to delete this question?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.adminApiService.deleteQuestion(id).subscribe({
+          next: () => {
+            this.showAlert('Question deleted', 'success');
+            this.loadQuestions();
+          },
+          error: () => {
+            this.showAlert('Failed to delete question', 'error');
+          }
+        });
+      }
+    });
   }
 }
