@@ -17,6 +17,7 @@ export const ADMIN_ROUTES: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: AdminDashboardComponent },
       { path: 'positions', component: PositionManagementComponent },
+      { path: 'candidates', loadComponent: () => import('./components/admin/candidates/candidates.component').then(m => m.CandidatesComponent) },
       { path: 'questions', component: QuestionManagementComponent },
       { path: 'settings', component: SettingsComponent },
     ],

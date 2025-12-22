@@ -20,6 +20,7 @@ export class ResultsComponent implements OnInit {
 
   constructor(private router: Router, private route: ActivatedRoute, private apiService: ApiService) {
     const navigation = this.router.getCurrentNavigation?.();
+    // Prefer result passed via navigation state (immediate on complete), otherwise will fetch from API
     this.result = navigation?.extras?.state?.['result'] || null;
   }
 

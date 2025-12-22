@@ -64,6 +64,11 @@ export class AuthService {
     this.currentUserSubject.next(response);
   }
 
+  // Public setter to store auth response (used when API returns token on apply)
+  setAuth(response: AuthResponse): void {
+    this.storeAuth(response);
+  }
+
   get currentUser$(): Observable<AuthResponse | null> {
     return this.currentUserSubject.asObservable();
   }

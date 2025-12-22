@@ -11,6 +11,7 @@ import {
   InterviewQuestionDto,
   SubmitAnswerDto,
   InterviewResultDto,
+  SectionScoreDto
 } from '../models/interview.model';
 
 @Injectable({
@@ -75,30 +76,70 @@ export class ApiService {
     );
   }
 
+  private normalizeResult(response: any): InterviewResultDto {
+    if (!response) return {
+      interviewNumber: '',
+      applicantName: '',
+      percentage: 0,
+      status: '',
+      totalScore: 0,
+      maxPossibleScore: 0,
+      sectionScores: {}
+    };
+
+    const raw = response.sectionScores ?? response.SectionScores ?? {};
+    const sectionScores: { [key: string]: SectionScoreDto } = {};
+    Object.keys(raw).forEach(k => {
+      const s = raw[k];
+      sectionScores[k] = {
+        score: s?.score ?? s?.Score ?? 0,
+        maxScore: s?.maxScore ?? s?.MaxScore ?? 0,
+        percentage: s?.percentage ?? s?.Percentage ?? 0
+      };
+    });
+
+    return {
+      interviewNumber: response.interviewNumber ?? response.InterviewNumber ?? '',
+      applicantName: response.applicantName ?? response.ApplicantName ?? '',
+      percentage: response.percentage ?? response.Percentage ?? 0,
+      status: response.status ?? response.Status ?? '',
+      totalScore: response.totalScore ?? response.TotalScore ?? 0,
+      maxPossibleScore: response.maxPossibleScore ?? response.MaxPossibleScore ?? 0,
+      sectionScores
+    };
+  }
+
   completeInterview(sessionId: string): Observable<InterviewResultDto> {
-    return this.http.post<InterviewResultDto>(
+    return this.http.post<any>(
       `${this.baseUrl}/interview/complete?sessionId=${sessionId}`,
       {}
-    );
+    ).pipe(map(response => this.normalizeResult(response)));
   }
 
   getResults(sessionId: string): Observable<InterviewResultDto> {
-    return this.http.get<InterviewResultDto>(
+    return this.http.get<any>(
       `${this.baseUrl}/interview/results`,
       {
         params: { sessionId },
       }
-    );
+    ).pipe(map(response => this.normalizeResult(response)));
   }
 
   getMyApplications(): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/applications/my-applications`).pipe(
       map(apps => apps.map(a => ({
-        // normalize casing so template can use `latestSessionId`
         ...a,
         latestSessionId: a.latestSessionId || a.LatestSessionId || null,
         positionTitle: a.positionTitle || a.PositionTitle || a.positionTitle,
-        techStack: a.techStack || a.TechStack || a.techStack
+        techStack: a.techStack || a.TechStack || a.techStack,
+        positionId:
+          a.positionId ||
+          a.PositionId ||
+          a.positionID ||
+          a.PositionID ||
+          a.position?.id ||
+          a.Position?.Id ||
+          null
       })))
     );
   }

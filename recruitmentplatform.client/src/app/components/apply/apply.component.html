@@ -53,9 +53,10 @@
   </div>
 
   <!-- Application Form - Show before submission -->
-  <div class="card apply-card" *ngIf="!emailSent">
+  <!-- Hide the form when user already applied for this position -->
+  <div class="card apply-card" *ngIf="!emailSent && !alreadyApplied">
     <div class="card-header">
-      <h4 class="card-title mb-0">Apply for Position</h4>
+      <h4 class="card-title mb-0">Apply for Position {{ positionName ? (' - ' + positionName) : '' }}</h4>
     </div>
     
     <div class="card-body">
@@ -119,4 +120,18 @@
       </form>
     </div>
   </div>
+
+  <!-- Show message if user already applied for this position -->
+  <div class="card mb-4" *ngIf="alreadyApplied">
+    <div class="card-header bg-info text-white">
+      <h5 class="card-title mb-0">You have already applied for {{ positionName }}</h5>
+    </div>
+    <div class="card-body">
+      <p class="mb-0">Our records show that you have already taken the test for this position. You cannot apply again.</p>
+    </div>
+    <div class="card-footer d-flex justify-content-end">
+      <button class="btn btn-secondary" (click)="goBack()">Back to Positions</button>
+    </div>
+  </div>
 </div>
+

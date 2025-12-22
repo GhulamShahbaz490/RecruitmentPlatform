@@ -81,23 +81,16 @@ public class InterviewController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("results")]
-    public async Task<ActionResult> GetResults([FromQuery] Guid sessionId)
-    {
-        var session = await _context.InterviewSessions
-            .Include(s => s.Result)
-            .Include(s => s.Application)
-            .FirstOrDefaultAsync(s => s.Id == sessionId);
-
-        if (session?.Result == null)
-            return NotFound("Results not available");
-
-        return Ok(new
+        [HttpGet("results")]
+        public async Task<ActionResult> GetResults([FromQuery] Guid sessionId)
         {
-            session.Result.Percentage,
-            Status = session.Result.Status.ToString(),
-            session.Result.TotalScore,
-            session.Result.MaxPossibleScore
-        });
-    }
+            // Use interview service to get the full InterviewResultDto which includes
+            // InterviewNumber, ApplicantName and SectionScores. The service will return
+            // an existing result if the interview is already completed.
+            var resultDto = await _interviewService.CompleteInterviewAsync(sessionId);
+            if (resultDto == null)
+                return NotFound("Results not available");
+
+            return Ok(resultDto);
+        }
 }

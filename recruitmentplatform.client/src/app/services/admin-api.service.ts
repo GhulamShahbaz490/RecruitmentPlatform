@@ -66,4 +66,13 @@ export class AdminApiService {
   updateSettings(settings: SettingsDto): Observable<any> {
     return this.http.put(`${this.baseUrl}/settings`, settings);
   }
+
+  // Candidates
+  getCandidates(params?: { status?: string; minPercentage?: number; search?: string }): Observable<any[]> {
+    const query: any = {};
+    if (params?.status) query.status = params.status;
+    if (params?.minPercentage !== undefined) query.minPercentage = String(params.minPercentage);
+    if (params?.search) query.search = params.search;
+    return this.http.get<any[]>(`${this.baseUrl}/candidates`, { params: query });
+  }
 }

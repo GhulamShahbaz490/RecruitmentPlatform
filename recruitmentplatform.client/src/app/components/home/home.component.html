@@ -1,10 +1,13 @@
 <div class="container">
   <!-- Logged In View -->
   <div *ngIf="isLoggedIn; else guestView">
-    <div class="hero-section bg-primary text-white rounded p-5 mb-4">
+    <div class="hero-section text-white rounded p-5 mb-4">
       <h1 class="display-4 text-white">My Applications</h1>
       <p class="lead mb-4 text-white">View your applied positions and start interviews</p>
-      <button type="button" [routerLink]="['/positions']" class="btn btn-outline-light">Browse More Positions</button>
+
+      <button type="button" class="btn btn-outline-light" (click)="openBrowseMorePositions()">
+        Browse More Positions
+      </button>
     </div>
 
     <!-- Loading -->
@@ -18,7 +21,9 @@
     <div *ngIf="!loading && myApplications.length === 0" class="alert alert-info">
       <h4>No applications found</h4>
       <p>You haven't applied for any positions yet.</p>
-      <a [routerLink]="['/positions']" class="btn btn-primary">Browse Positions</a>
+      <button type="button" class="btn btn-primary" (click)="openBrowseMorePositions()">
+        Browse Positions
+      </button>
     </div>
 
     <!-- Applications Grid -->
@@ -31,6 +36,7 @@
               {{ app.interviewStatus }}
             </span>
           </div>
+
           <div class="card-body">
             <div class="mb-3">
               <span class="badge bg-secondary me-2">{{ app.techStack }}</span>
@@ -42,34 +48,97 @@
               <i class="bi bi-123 me-1"></i> Interview #{{ app.interviewNumber }}
             </p>
           </div>
+
           <div class="card-footer bg-transparent">
-            <!-- FUNCTIONAL BUTTONS ONLY -->
-            <button *ngIf="app.interviewStatus === 'Pending'" 
-                    class="btn btn-primary w-100 mb-2"
-                    (click)="startInterview(app.latestSessionId || app.LatestSessionId || '')">
+            <button
+              *ngIf="app.interviewStatus === 'Pending'"
+              class="btn btn-primary w-100 mb-2"
+              (click)="startInterview(app.latestSessionId || app.LatestSessionId || '')"
+            >
               <i class="bi bi-play-circle me-2"></i>Start Interview
             </button>
-            <button *ngIf="app.interviewStatus === 'Completed'" 
-                    class="btn btn-success w-100 mb-2"
-                    [routerLink]="['/results']"
-                    [queryParams]="{ sessionId: app.latestSessionId || app.LatestSessionId }">
+
+            <button
+              *ngIf="app.interviewStatus === 'Completed'"
+              class="btn btn-success w-100 mb-2"
+              [routerLink]="['/results']"
+              [queryParams]="{ sessionId: app.latestSessionId || app.LatestSessionId }"
+            >
               <i class="bi bi-check-circle me-2"></i>View Results
             </button>
-            <!-- REMOVED: Non-functional buttons -->
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Browse Positions Modal -->
+    <ng-template #browsePositionsModal let-modal>
+      <div class="modal-header">
+        <h5 class="modal-title">Browse Positions</h5>
+        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+      </div>
+
+      <div class="modal-body">
+        <div *ngIf="browseError" class="alert alert-danger mb-3">{{ browseError }}</div>
+
+        <div *ngIf="browseLoading" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+
+        <div *ngIf="!browseLoading">
+          <input class="form-control" placeholder="Search positions..." [(ngModel)]="browseSearch" />
+
+          <div class="mt-3" *ngIf="filteredAvailablePositions.length === 0">
+            <div class="alert alert-info mb-0">
+              No new positions available (you may have already applied to all positions).
+            </div>
+          </div>
+
+          <div class="mt-3 d-grid gap-2" *ngIf="filteredAvailablePositions.length > 0">
+            <div class="card browse-card" *ngFor="let position of filteredAvailablePositions">
+              <div class="card-body d-flex gap-3 justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                  <h6 class="mb-1">{{ position.title }}</h6>
+                  <div class="small text-muted mb-2">
+                    {{ position.description | slice:0:140 }}{{ (position.description && position.description.length > 140) ? '...' : '' }}
+                  </div>
+
+                  <div class="d-flex flex-wrap gap-1">
+                    <span class="badge bg-primary" *ngIf="position.level">{{ position.level }}</span>
+                    <span class="badge bg-secondary" *ngIf="position.location">{{ position.location }}</span>
+                    <span class="badge bg-info" *ngFor="let tech of getTechStackList(position.techStack)">
+                      {{ tech }}
+                    </span>
+                  </div>
+                </div>
+
+                <button type="button" class="btn btn-primary" (click)="pickPosition(position)">
+                  Apply Now
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" (click)="modal.dismiss()">Close</button>
+      </div>
+    </ng-template>
   </div>
 
   <!-- Guest View -->
   <ng-template #guestView>
-    <div class="hero-section bg-gradient text-white rounded p-5 mb-4 text-center">
+    <!-- FIX: removed bg-gradient so the heading is visible -->
+    <div class="hero-section text-white rounded p-5 mb-4 text-center">
       <h1 class="display-4 text-white">.NET Recruitment Platform</h1>
       <p class="lead mb-4 text-white">Find your next career opportunity in .NET ecosystem</p>
+
       <div class="d-flex justify-content-center gap-3">
         <button type="button" [routerLink]="['/positions']" class="btn btn-light btn-lg">Browse Positions</button>
-        <button [routerLink]="['/login']" class="btn btn-outline-light btn-lg">Login</button>
+        <button type="button" [routerLink]="['/login']" class="btn btn-outline-light btn-lg">Login</button>
       </div>
     </div>
 
@@ -87,18 +156,18 @@
           <div class="card-body">
             <h5 class="card-title">{{ position.title }}</h5>
             <p class="card-text">{{ position.description | slice:0:100 }}...</p>
+
             <div class="mb-3">
               <span class="badge bg-primary me-1">{{ position.level }}</span>
               <span class="badge bg-secondary me-1">{{ position.location }}</span>
-              <span *ngFor="let tech of getTechStackList(position.techStack)" 
-                    class="badge bg-info me-1">
+              <span *ngFor="let tech of getTechStackList(position.techStack)" class="badge bg-info me-1">
                 {{ tech }}
               </span>
             </div>
           </div>
+
           <div class="card-footer bg-transparent">
-            <button [routerLink]="['/apply', position.id]" 
-                    class="btn btn-primary w-100">
+            <button [routerLink]="['/apply', position.id]" class="btn btn-primary w-100">
               Apply Now
             </button>
           </div>

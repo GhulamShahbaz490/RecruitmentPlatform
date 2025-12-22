@@ -137,11 +137,12 @@ export class InterviewComponent implements OnInit, OnDestroy {
     if (!this.currentQuestion) return;
 
     this.isSubmitting = true;
-    const timeTaken = 60 - this.timeLeft; // Assuming 60 seconds total
+    const totalForQuestion = this.currentQuestion.timeLimitSeconds || 60;
+    const timeTaken = Math.max(0, totalForQuestion - this.timeLeft);
 
     const answerDto = {
       questionId: this.currentQuestion.id,
-      selectedAnswerIndex: this.selectedAnswer!,
+      selectedAnswerIndex: Math.max(-1, this.selectedAnswer ?? -1),
       timeTakenSeconds: timeTaken
     };
 
